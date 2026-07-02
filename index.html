@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文房四宝 - 毛笔制作之旅</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="scene scene-home">
+        <div class="page-number">1/8</div>
+        <div class="content">
+            <div class="ink-splash ink-1"></div>
+            <div class="ink-splash ink-2"></div>
+            <div class="ink-splash ink-3"></div>
+            
+            <div class="home-layout">
+                <div class="vertical-story">
+                    <p class="vertical-paragraph">
+                        笔从毛料蜕变为文房之宝。
+                    </p>
+                    <p class="vertical-paragraph">
+                        此刻，化身制笔匠人，亲手见证毛
+                    </p>
+                    <p class="vertical-paragraph">
+                        经数十道古法工序。
+                    </p>
+                    <p class="vertical-paragraph">
+                        自善琏古坊起，一支湖笔要历
+                    </p>
+                    <p class="vertical-paragraph">
+                        笔居文房四宝之首，承载千年翰墨文脉。
+                    </p>
+                </div>
+                
+                <div class="title-area">
+                    <h1 class="title-horizontal">文房四宝 · 古法制毫</h1>
+                </div>
+            </div>
+            
+            <button class="refresh-btn" onclick="location.reload()"></button>
+            
+            <div class="hint">
+                <!-- 新增开始按钮 -->
+                <button id="start-btn" onclick="goToPage('pages/materials.html')" style="
+                position: relative;
+                z-index: 1000;
+                padding: 15px 50px;
+                background: linear-gradient(135deg, #d4af37, #b8860b);
+                border: none;
+                border-radius: 30px;
+                color: #1a1a2e;
+                font-family: 'Noto Serif SC', serif;
+                font-size: 1.5rem;
+                font-weight: bold;
+                cursor: pointer;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+                pointer-events: auto;
+                margin-bottom: 20px;
+                transform: scale(0.75);
+                transform-origin: center center;
+            " onmouseover="this.style.transform='scale(0.81)'; this.style.boxShadow='0 6px 20px rgba(212, 175, 55, 0.6)'" onmouseout="this.style.transform='scale(0.75)'; this.style.boxShadow='0 4px 15px rgba(212, 175, 55, 0.4)'">
+                开始
+            </button>
+                
+                <p>点击上方按钮开始旅程</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/main.js"></script>
+</body>
+</html>
