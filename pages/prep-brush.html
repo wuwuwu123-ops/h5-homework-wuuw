@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文房四宝 - 准备笔头</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="scene scene-prep">
+        <button class="back-btn" onclick="goBack()">← 返回</button>
+        <div class="page-number">4/8</div>
+        
+        <div id="shuidao-container" style="position: fixed; top: 50%; left: 50%; width: 600px; height: auto; z-index: 120; transform-origin: center center; transform: translate(calc(-50% + 300px), -50%) scale(0.140625); user-select: none; -webkit-user-select: none; touch-action: none;">
+            <img id="shuidao-img" src="../images/icons/shuidao.png" alt="shuidao" style="width: 100%; height: auto; pointer-events: none;">
+        </div>
+        <div id="shuzi-container" style="position: fixed; top: 50%; left: 50%; width: 300px; height: auto; z-index: 110; transform-origin: center center; transform: translate(calc(-50% + 200px), calc(-50% - 10px)) scale(0.3125); user-select: none; -webkit-user-select: none; touch-action: none;">
+            <img id="shuzi-img" src="../images/icons/shuzi.png" alt="shuzi" style="width: 100%; height: auto; pointer-events: none;">
+        </div>
+        <div id="rongmao-container" style="position: fixed; top: 50%; left: 5%; transform: translateY(-40px) scale(1.5) translateX(-47px); z-index: 100; pointer-events: none;">
+            <img id="diezi-img" src="../images/icons/diezi.png" alt="diezi" style="width: 600px; height: auto; transform-origin: center center; pointer-events: none;">
+            <img id="rongmao-img" src="../images/icons/rongmao.png" alt="rongmao" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: auto; transform-origin: center center; pointer-events: none; opacity: 0; transition: opacity 1s ease-out;"></div>
+        
+        <div id="niuguban-container" style="position: fixed; top: 50%; right: 35%; width: 400px; height: 400px; transform: translateY(-50%) translateX(-250px) scale(2.25); z-index: 100; pointer-events: none;">
+            <img id="kongniuguban-img" src="../images/icons/kongniuguban.png" alt="kongniuguban" style="width: 100%; height: 100%; object-fit: contain; transform-origin: center center; pointer-events: none;">
+            <img id="niuguban-img" src="../images/icons/niuguban.png" alt="niuguban" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; transform-origin: center center; transform: translate(-2px, -2px); pointer-events: none; opacity: 0; transition: opacity 1s ease-out; z-index: 10000;">
+            <div id="niuguban-body-size-rectangle" style="position: absolute; top: calc(35% - 10px); left: calc(42.5% - 15px); width: 15%; height: calc(30% + 10px); border: none; background: transparent; z-index: 9998; pointer-events: none; cursor: ns-resize; transform: skewX(-13deg); transform-origin: bottom center;"></div>
+            <div id="niuguban-friction-zone-indicator" style="position: absolute; top: 35%; left: 42.5%; width: 15%; height: 30%; border: none; background: transparent; z-index: 9999; pointer-events: none; opacity: 0; transition: opacity 0.3s ease-out;"></div>
+            <div id="down-arrow" style="position: absolute; top: calc(50% - 40px); left: calc(42.5% + 15% + 20px); transform: translateY(-50%); z-index: 10001; pointer-events: none; opacity: 0; transition: opacity 0.5s ease-out;">
+                <div style="width: 4px; height: 40px; background-color: black; margin: 0 auto;"></div>
+                <div style="font-size: 20px; color: black; text-align: center; margin-top: -10px; line-height: 1;">▼</div>
+            </div>
+        </div>
+        
+        <div id="friction-zone-indicator" style="position: fixed; top: 50%; left: 50%; width: 300px; height: 300px; transform: translate(-50%, -50%); border: none; background: transparent; z-index: 9999; pointer-events: none;"></div>
+        
+        <div id="pen-container" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 95; pointer-events: none;">
+            <img id="pen-img" src="../images/icons/pen.png" alt="pen" style="width: 800px; height: auto; transform-origin: center center; pointer-events: none;">
+            <img id="shuipen-img" src="../images/icons/shuipen.png" alt="shuipen" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 800px; height: auto; transform-origin: center center; pointer-events: none; opacity: 0; transition: opacity 1s ease-out;">
+        </div>
+        
+        <div id="maojian-container" style="position: fixed; top: 50%; right: 35%; width: 400px; height: 400px; transform: translateY(calc(-50% + 100px)) translateX(-270px) scale(2.25); z-index: 10001; pointer-events: none;">
+            <img id="maojian-img" src="../images/icons/maojian.png" alt="maojian" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(calc(1 / 2.25)) rotate(180deg); width: 80px; height: auto; transform-origin: center center; pointer-events: none; opacity: 0; transition: opacity 1s ease-out;">
+        </div>
+        
+        <div id="prep-brush-hint" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1200; pointer-events: none;">
+            <div id="prep-brush-hint-text" style="font-family: 'KaiTi', '楷体', serif; font-size: 1.15rem; font-weight: bold; color: #f5e6b3; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75); background: rgba(26, 26, 46, 0.78); border: 1px solid rgba(212, 175, 55, 0.7); border-radius: 999px; padding: 10px 24px; white-space: nowrap;">
+                用梳子梳理水盆中的羊毛
+            </div>
+        </div>
+        <button class="refresh-btn" onclick="location.reload()"></button>
+        
+        <div class="hint-bottom">
+            <button id="next-btn" class="next-btn" onclick="goToPage('bind-brush.html')" style="opacity: 0; pointer-events: none; transition: opacity 0.5s ease-out;"> 
+                <span class="arrow">下一步</span>
+            </button>
+        </div>
+    </div>
+    
+    <script src="../js/main.js"></script>
+    <script>
+    (function() {
+        var shuziContainer = document.getElementById('shuzi-container');
+        var shuidaoContainer = document.getElementById('shuidao-container');
+        var niugubanImg = document.getElementById('niuguban-img');
+        var shuipenImg = document.getElementById('shuipen-img');
+        var maojianImg = document.getElementById('maojian-img');
+        var nextBtn = document.getElementById('next-btn');
+        if (!shuziContainer || !shuidaoContainer || !niugubanImg || !shuipenImg || !maojianImg || !nextBtn) return;
+
+        var frictionZoneIndicator = document.getElementById('friction-zone-indicator');
+        var frictionCount = 0;
+        var lastDirection = 0;
+        var lastX = 0;
+        
+        // 交互状态：0 = 初始，1 = 完成shuipen摩擦，2 = 完成niuguban摩擦，3 = 完成水刀滑动，4 = 完成平行四边形滑动
+        var step = 0;
+        
+        var niugubanFrictionCount = 0;
+        var niugubanLastDirection = 0;
+        var niugubanLastX = 0;
+        var rongmaoComplete = false;
+
+        var shuziOriginalStyles = {
+            left: shuziContainer.style.left,
+            top: shuziContainer.style.top,
+            transform: shuziContainer.style.transform,
+            zIndex: shuziContainer.style.zIndex
+        };
+        var shuidaoOriginalStyles = {
+            left: shuidaoContainer.style.left,
+            top: shuidaoContainer.style.top,
+            transform: shuidaoContainer.style.transform,
+            zIndex: shuidaoContainer.style.zIndex
+        };
+
+        var shuziHandle = document.createElement('div');
+        shuziHandle.style.position = 'absolute';
+        shuziHandle.style.top = '50%';
+        shuziHandle.style.left = '50%';
+        shuziHandle.style.width = '150px';
+        shuziHandle.style.height = '150px';
+        shuziHandle.style.marginLeft = '-75px';
+        shuziHandle.style.marginTop = '-75px';
+        shuziHandle.style.cursor = 'grab';
+        shuziHandle.style.pointerEvents = 'auto';
+        shuziContainer.appendChild(shuziHandle);
+
+        var shuidaoHandle = document.createElement('div');
+        shuidaoHandle.style.position = 'absolute';
+        shuidaoHandle.style.top = '50%';
+        shuidaoHandle.style.left = '50%';
+        shuidaoHandle.style.width = '150px';
+        shuidaoHandle.style.height = '150px';
+        shuidaoHandle.style.marginLeft = '-75px';
+        shuidaoHandle.style.marginTop = '-75px';
+        shuidaoHandle.style.cursor = 'grab';
+        shuidaoHandle.style.pointerEvents = 'auto';
+        shuidaoContainer.appendChild(shuidaoHandle);
+
+        function makeDraggable(container, handleElement, originalStyles, scaleValue) {
+            let isDragging = false;
+            let offsetX = 0;
+            let offsetY = 0;
+
+            function onPointerDown(e) {
+                isDragging = true;
+                handleElement.style.cursor = 'grabbing';
+                container.style.zIndex = '200';
+
+                var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+                
+                const rect = container.getBoundingClientRect();
+                
+                offsetX = point.clientX - (rect.left + rect.width / 2);
+                offsetY = point.clientY - (rect.top + rect.height / 2);
+                
+                if (container === shuziContainer) {
+                    lastX = point.clientX;
+                    niugubanLastX = point.clientX;
+                }
+
+                container.style.transition = 'none';
+                container.style.left = (rect.left + rect.width / 2) + 'px';
+                container.style.top = (rect.top + rect.height / 2) + 'px';
+                container.style.transform = 'translate(-50%, -50%) rotate(-30deg) scale(' + scaleValue + ')';
+
+                if (e.cancelable) e.preventDefault();
+            }
+
+            function onPointerMove(e) {
+                if (!isDragging) return;
+
+                var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+                container.style.left = (point.clientX - offsetX) + 'px';
+                container.style.top = (point.clientY - offsetY) + 'px';
+
+                if (container === shuziContainer) {
+                    checkFriction(point);
+                } else if (container === shuidaoContainer) {
+                    checkShuidaoSlide(point);
+                }
+            }
+
+            function onPointerUp() {
+                if (!isDragging) return;
+                isDragging = false;
+                handleElement.style.cursor = 'grab';
+
+                container.style.transition = 'all 0.3s ease-out';
+                container.style.left = originalStyles.left;
+                container.style.top = originalStyles.top;
+                container.style.transform = originalStyles.transform;
+                container.style.zIndex = originalStyles.zIndex;
+            }
+
+            handleElement.addEventListener('mousedown', onPointerDown);
+            document.addEventListener('mousemove', onPointerMove);
+            document.addEventListener('mouseup', onPointerUp);
+
+            handleElement.addEventListener('touchstart', onPointerDown, { passive: false });
+            document.addEventListener('touchmove', onPointerMove, { passive: false });
+            document.addEventListener('touchend', onPointerUp);
+        }
+
+        function isShuziOverShuipen() {
+            var shuziRect = shuziContainer.getBoundingClientRect();
+            var zoneRect = frictionZoneIndicator.getBoundingClientRect();
+            var shuziCenterX = shuziRect.left + shuziRect.width / 2;
+            var shuziCenterY = shuziRect.top + shuziRect.height / 2;
+            var zoneCenterX = zoneRect.left + zoneRect.width / 2;
+            var zoneCenterY = zoneRect.top + zoneRect.height / 2;
+            var dx = shuziCenterX - zoneCenterX;
+            var dy = shuziCenterY - zoneCenterY;
+            var distance = Math.sqrt(dx * dx + dy * dy);
+            var isInZone = distance < zoneRect.width / 2;
+            
+            return isInZone;
+        }
+
+        function isShuziOverNiuguban() {
+            if (step < 1) return false;
+            var shuziRect = shuziContainer.getBoundingClientRect();
+            var niugubanIndicator = document.getElementById('niuguban-friction-zone-indicator');
+            var niugubanRect = niugubanIndicator.getBoundingClientRect();
+            
+            var shuziCenterX = shuziRect.left + shuziRect.width / 2;
+            var shuziCenterY = shuziRect.top + shuziRect.height / 2;
+            var isInZone = shuziCenterX >= niugubanRect.left && shuziCenterX <= niugubanRect.right &&
+                   shuziCenterY >= niugubanRect.top && shuziCenterY <= niugubanRect.bottom;
+            
+            return isInZone;
+        }
+
+        function checkFriction(point) {
+            if (step === 0 && isShuziOverShuipen()) {
+                var currentX = point.clientX;
+                
+                if (lastX === 0) {
+                    lastX = currentX;
+                    return;
+                }
+                
+                var direction = currentX > lastX ? 1 : (currentX < lastX ? -1 : 0);
+                
+                if (direction !== 0 && direction !== lastDirection && lastDirection !== 0) {
+                    frictionCount++;
+                    if (frictionCount >= 6) {
+                        completeShuipenAction();
+                    }
+                }
+                
+                if (direction !== 0) {
+                    lastDirection = direction;
+                }
+                lastX = currentX;
+            }
+            
+            if (step === 1 && isShuziOverNiuguban()) {
+                var currentX = point.clientX;
+                
+                if (niugubanLastX === 0) {
+                    niugubanLastX = currentX;
+                    return;
+                }
+                
+                var direction = currentX > niugubanLastX ? 1 : (currentX < niugubanLastX ? -1 : 0);
+                
+                if (direction !== 0 && direction !== niugubanLastDirection && niugubanLastDirection !== 0) {
+                    niugubanFrictionCount++;
+                    if (niugubanFrictionCount >= 6) {
+                        completeNiugubanAction();
+                    }
+                }
+                
+                if (direction !== 0) {
+                    niugubanLastDirection = direction;
+                }
+                niugubanLastX = currentX;
+            }
+        }
+
+        var shuidaoStartY = 0;
+        var shuidaoHasSlidDown = false;
+
+        function checkShuidaoSlide(point) {
+            if (step !== 2) return;
+            
+            if (shuidaoStartY === 0) {
+                shuidaoStartY = point.clientY;
+                return;
+            }
+            
+            var deltaY = point.clientY - shuidaoStartY;
+            
+            if (deltaY > 50 && !shuidaoHasSlidDown) {
+                var shuidaoRect = shuidaoContainer.getBoundingClientRect();
+                var niugubanContainer = document.getElementById('niuguban-container');
+                var niugubanRect = niugubanContainer.getBoundingClientRect();
+                
+                if (shuidaoRect.bottom >= niugubanRect.top) {
+                    shuidaoHasSlidDown = true;
+                    completeShuidaoAction();
+                }
+            }
+        }
+
+        function completeShuipenAction() {
+            step = 1;
+            shuipenImg.style.opacity = '1';
+            niugubanImg.style.opacity = '1';
+            
+            var hintText = document.getElementById('prep-brush-hint-text');
+            if (hintText) {
+                hintText.textContent = '用梳子将铺在牛骨板上的羊毛梳理干净整齐';
+            }
+        }
+
+        function completeNiugubanAction() {
+            step = 2;
+            rongmaoComplete = true;
+            document.getElementById('rongmao-img').style.opacity = '1';
+            document.getElementById('down-arrow').style.opacity = '1';
+            
+            var hintText = document.getElementById('prep-brush-hint-text');
+            if (hintText) {
+                hintText.textContent = '用水刀沿箭头方向将牛骨板上的羊毛尾部切除';
+            }
+        }
+
+        function completeShuidaoAction() {
+            step = 3;
+            var rectangle = document.getElementById('niuguban-body-size-rectangle');
+            if (rectangle) {
+                rectangle.style.pointerEvents = 'auto';
+            }
+            document.getElementById('down-arrow').style.opacity = '0';
+            
+            var hintText = document.getElementById('prep-brush-hint-text');
+            if (hintText) {
+                hintText.textContent = '从上至下将羊毛卷起来';
+            }
+        }
+
+        makeDraggable(
+            shuziContainer, 
+            shuziHandle, 
+            shuziOriginalStyles, 
+            0.3125
+        );
+
+        makeDraggable(
+            shuidaoContainer, 
+            shuidaoHandle, 
+            shuidaoOriginalStyles, 
+            0.140625
+        );
+
+        var rectangle = document.getElementById('niuguban-body-size-rectangle');
+        if (rectangle) {
+            let isDragging = false;
+            let startY = 0;
+            let startScaleY = 1;
+            let rectHeight = 0;
+
+            function handlePointerDown(e) {
+                if (step < 3) return;
+                isDragging = true;
+                var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+                startY = point.clientY;
+                const rect = rectangle.getBoundingClientRect();
+                rectHeight = rect.height;
+                const computedStyle = window.getComputedStyle(rectangle);
+                const transform = computedStyle.getPropertyValue('transform');
+                if (transform !== 'none') {
+                    const matrix = new DOMMatrix(transform);
+                    startScaleY = matrix.m22;
+                }
+                rectangle.style.cursor = 'ns-resize';
+                if (e.cancelable) e.preventDefault();
+            }
+
+            function handlePointerMove(e) {
+                if (!isDragging || step < 3) return;
+                var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+                const deltaY = point.clientY - startY;
+                if (deltaY >= 0) {
+                    let newScaleY = startScaleY - (deltaY / rectHeight);
+                    if (newScaleY < 0) newScaleY = 0;
+                    rectangle.style.transform = 'skewX(-13deg) scaleY(' + newScaleY + ')';
+                    niugubanImg.style.clipPath = 'inset(' + ((1 - newScaleY) * 100) + '% 0 0 0)';
+                    
+                    if (newScaleY <= 0) {
+                        completeSlideAction();
+                    }
+                }
+                if (e.cancelable) e.preventDefault();
+            }
+
+            function handlePointerUp() {
+                isDragging = false;
+                rectangle.style.cursor = 'ns-resize';
+            }
+
+            rectangle.addEventListener('mousedown', handlePointerDown);
+            rectangle.addEventListener('touchstart', handlePointerDown, { passive: false });
+            
+            document.addEventListener('mousemove', handlePointerMove);
+            document.addEventListener('touchmove', handlePointerMove, { passive: false });
+            
+            document.addEventListener('mouseup', handlePointerUp);
+            document.addEventListener('touchend', handlePointerUp);
+        }
+
+        function completeSlideAction() {
+            if (step >= 4) return;
+            step = 4;
+            maojianImg.style.opacity = '1';
+            setTimeout(function() {
+                nextBtn.style.opacity = '1';
+                nextBtn.style.pointerEvents = 'auto';
+            }, 1000);
+        }
+    })();
+    </script>
+</body>
+</html>

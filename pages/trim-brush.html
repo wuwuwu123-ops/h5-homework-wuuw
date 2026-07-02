@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文房四宝 - 修整毛笔</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="scene scene-trim">
+        <button class="back-btn" onclick="goBack()">← 返回</button>
+        <div class="page-number">6/8</div>
+        
+        <div id="mohao-container" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); z-index: 100; pointer-events: none; transform-origin: center center;">
+            <img src="../images/icons/mohao.png" alt="mohao" style="width: 800px; height: auto;">
+        </div>
+        
+        <div id="liangzhutong-container" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); z-index: 101; pointer-events: none; transform-origin: center center;">
+            <!-- 基础图片，用来撑开容器高度 -->
+            <img src="../images/icons/liangzhutong.png" alt="liangzhutong" style="width: 800px; height: auto; display: block; visibility: hidden;">
+            <!-- 左半部分，初始可见，摩擦后隐藏 -->
+            <div id="liangzhutong-left" style="position: absolute; top: 0; left: 0; width: 50%; height: 100%; overflow: hidden; transition: opacity 0.5s ease-out; opacity: 1;">
+                <img src="../images/icons/liangzhutong.png" alt="liangzhutong-left" style="width: 800px; height: auto; display: block;">
+            </div>
+            <!-- 右半部分，初始可见，摩擦后隐藏 -->
+            <div id="liangzhutong-right" style="position: absolute; top: 0; right: 0; width: 50%; height: 100%; overflow: hidden; transition: opacity 0.5s ease-out; opacity: 1;">
+                <img src="../images/icons/liangzhutong.png" alt="liangzhutong-right" style="width: 800px; height: auto; display: block; position: absolute; right: 0;">
+            </div>
+        </div>
+        
+        <div id="friction-zone-left" style="position: fixed; top: 50%; left: 50%; transform: translate(calc(-50% - 100px), -50%); z-index: 9999; width: 100px; height: 200px; background: transparent; border: none; pointer-events: none;"></div>
+        <div id="friction-zone-right" style="position: fixed; top: 50%; left: 50%; transform: translate(calc(-50% + 100px), -50%); z-index: 9999; width: 100px; height: 200px; background: transparent; border: none; pointer-events: none;"></div>
+        
+        <div id="cuodao-container" style="position: fixed; top: 50%; left: 50%; transform: translate(calc(-50% + 250px), -50%) scale(0.0333); z-index: 102; transform-origin: center center;">
+            <img src="../images/icons/cuodao.png" alt="cuodao" style="width: 800px; height: auto; pointer-events: none;">
+        </div>
+        
+        <div id="trim-brush-hint" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1200; pointer-events: none;">
+            <div id="trim-brush-hint-text" style="font-family: 'KaiTi', '楷体', serif; font-size: 1.15rem; font-weight: bold; color: #f5e6b3; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75); background: rgba(26, 26, 46, 0.78); border: 1px solid rgba(212, 175, 55, 0.7); border-radius: 999px; padding: 10px 24px; white-space: nowrap;">
+                用锉刀将竹筒两端锉平
+            </div>
+        </div>
+        <button class="refresh-btn" onclick="location.reload()"></button>
+        
+        <div class="hint-bottom">
+            <button id="next-btn-finish" class="next-btn" onclick="goToPage('complete.html')" style="opacity: 0; pointer-events: none; transition: opacity 0.5s ease-out;">
+                <span class="arrow">下一步</span>
+            </button>
+        </div>
+    </div>
+    
+    <script src="../js/main.js"></script>
+    <script>
+        (function() {
+            var cuodaoContainer = document.getElementById('cuodao-container');
+            var liangzhutongLeft = document.getElementById('liangzhutong-left');
+            var liangzhutongRight = document.getElementById('liangzhutong-right');
+            var frictionZoneLeft = document.getElementById('friction-zone-left');
+            var frictionZoneRight = document.getElementById('friction-zone-right');
+            var nextBtnFinish = document.getElementById('next-btn-finish');
+            
+            if (!cuodaoContainer) return;
+
+            var isDragging = false;
+            var offsetX = 0, offsetY = 0;
+            var cuodaoOriginalStyles = {
+                left: cuodaoContainer.style.left,
+                top: cuodaoContainer.style.top,
+                transform: cuodaoContainer.style.transform,
+                zIndex: cuodaoContainer.style.zIndex
+            };
+
+            var leftFrictionCount = 0;
+            var rightFrictionCount = 0;
+            var lastYInZone = { left: 0, right: 0 };
+            var directionInZone = { left: null, right: null }; // null, 'up', 'down'
+            
+            // 检查是否完成摩擦
+            function checkCompletion() {
+                if (leftFrictionCount >= 5 && rightFrictionCount >= 5 && nextBtnFinish) {
+                    nextBtnFinish.style.opacity = '1';
+                    nextBtnFinish.style.pointerEvents = 'auto';
+                }
+            }
+
+            var cuodaoHandle = document.createElement('div');
+            cuodaoHandle.style.position = 'absolute';
+            cuodaoHandle.style.top = '50%';
+            cuodaoHandle.style.left = '50%';
+            cuodaoHandle.style.width = '800px';
+            cuodaoHandle.style.height = '800px';
+            cuodaoHandle.style.marginLeft = '-400px';
+            cuodaoHandle.style.marginTop = '400px';
+            cuodaoHandle.style.cursor = 'grab';
+            cuodaoHandle.style.pointerEvents = 'auto';
+            cuodaoContainer.appendChild(cuodaoHandle);
+
+            // 检测锉刀上半部分是否在区域内
+            function isCuodaoTopInZone(zoneElement) {
+                if (!zoneElement) return false;
+                var cuodaoRect = cuodaoContainer.getBoundingClientRect();
+                var zoneRect = zoneElement.getBoundingClientRect();
+                // 锉刀上半部分的中心
+                var cuodaoTopX = cuodaoRect.left + cuodaoRect.width / 2;
+                var cuodaoTopY = cuodaoRect.top + cuodaoRect.height * 0.25;
+                return cuodaoTopX >= zoneRect.left && cuodaoTopX <= zoneRect.right &&
+                       cuodaoTopY >= zoneRect.top && cuodaoTopY <= zoneRect.bottom;
+            }
+
+            function onCuodaoPointerDown(e) {
+                isDragging = true;
+                cuodaoHandle.style.cursor = 'grabbing';
+                cuodaoContainer.style.zIndex = '200';
+                var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+                var rect = cuodaoContainer.getBoundingClientRect();
+                offsetX = point.clientX - (rect.left + rect.width / 2);
+                offsetY = point.clientY - (rect.top + rect.height / 2);
+                cuodaoContainer.style.transition = 'none';
+                cuodaoContainer.style.left = (rect.left + rect.width / 2) + 'px';
+                cuodaoContainer.style.top = (rect.top + rect.height / 2) + 'px';
+                cuodaoContainer.style.transform = 'translate(-50%, -50%) rotate(-30deg) scale(0.0333)';
+                
+                // 初始化状态
+                lastYInZone = { left: 0, right: 0 };
+                directionInZone = { left: null, right: null };
+                
+                if (e.cancelable) e.preventDefault();
+            }
+
+            function onCuodaoPointerMove(e) {
+                if (!isDragging) return;
+                var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+                var newCuodaoX = point.clientX - offsetX;
+                var newCuodaoY = point.clientY - offsetY;
+                cuodaoContainer.style.left = newCuodaoX + 'px';
+                cuodaoContainer.style.top = newCuodaoY + 'px';
+
+                var inLeftZone = isCuodaoTopInZone(frictionZoneLeft);
+                var inRightZone = isCuodaoTopInZone(frictionZoneRight);
+
+                if (inLeftZone) {
+                    var deltaY = newCuodaoY - lastYInZone.left;
+                    var currentDirection = deltaY > 0 ? 'down' : (deltaY < 0 ? 'up' : directionInZone.left);
+                    
+                    if (directionInZone.left === null) {
+                        // 第一次进入区域，记录初始方向
+                        directionInZone.left = currentDirection;
+                    } else if (directionInZone.left !== currentDirection && currentDirection !== null) {
+                        // 方向改变，算一次摩擦
+                        leftFrictionCount++;
+                        directionInZone.left = currentDirection;
+                        
+                        if (leftFrictionCount >= 5 && liangzhutongLeft) {
+                            liangzhutongLeft.style.opacity = '0';
+                        }
+                        
+                        checkCompletion();
+                    }
+                    lastYInZone.left = newCuodaoY;
+                } else {
+                    // 离开左区域，重置
+                    directionInZone.left = null;
+                    lastYInZone.left = 0;
+                }
+
+                if (inRightZone) {
+                    var deltaY = newCuodaoY - lastYInZone.right;
+                    var currentDirection = deltaY > 0 ? 'down' : (deltaY < 0 ? 'up' : directionInZone.right);
+                    
+                    if (directionInZone.right === null) {
+                        // 第一次进入区域，记录初始方向
+                        directionInZone.right = currentDirection;
+                    } else if (directionInZone.right !== currentDirection && currentDirection !== null) {
+                        // 方向改变，算一次摩擦
+                        rightFrictionCount++;
+                        directionInZone.right = currentDirection;
+                        
+                        if (rightFrictionCount >= 5 && liangzhutongRight) {
+                            liangzhutongRight.style.opacity = '0';
+                        }
+                        
+                        checkCompletion();
+                    }
+                    lastYInZone.right = newCuodaoY;
+                } else {
+                    // 离开右区域，重置
+                    directionInZone.right = null;
+                    lastYInZone.right = 0;
+                }
+            }
+
+            function onCuodaoPointerUp() {
+                if (!isDragging) return;
+                isDragging = false;
+                cuodaoHandle.style.cursor = 'grab';
+                cuodaoContainer.style.transition = 'all 0.5s ease-out';
+                cuodaoContainer.style.left = cuodaoOriginalStyles.left;
+                cuodaoContainer.style.top = cuodaoOriginalStyles.top;
+                cuodaoContainer.style.transform = cuodaoOriginalStyles.transform;
+                cuodaoContainer.style.zIndex = cuodaoOriginalStyles.zIndex;
+                
+                // 重置状态
+                lastYInZone = { left: 0, right: 0 };
+                directionInZone = { left: null, right: null };
+            }
+
+            cuodaoHandle.addEventListener('mousedown', onCuodaoPointerDown);
+            document.addEventListener('mousemove', onCuodaoPointerMove);
+            document.addEventListener('mouseup', onCuodaoPointerUp);
+            cuodaoHandle.addEventListener('touchstart', onCuodaoPointerDown, { passive: false });
+            document.addEventListener('touchmove', onCuodaoPointerMove, { passive: false });
+            document.addEventListener('touchend', onCuodaoPointerUp);
+        })();
+    </script>
+</body>
+</html>

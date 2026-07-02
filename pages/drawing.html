@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文房四宝 - 书写墨宝</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* 竖屏提示层 */
+        #orientation-hint {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: #fff;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        #orientation-hint.visible {
+            display: flex;
+        }
+        
+        #orientation-hint .hint-text {
+            font-family: 'KaiTi', '楷体', serif;
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        #orientation-hint .hint-icon {
+            font-size: 4rem;
+            animation: rotate-hint 2s ease-in-out infinite;
+        }
+        
+        @keyframes rotate-hint {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(-90deg); }
+        }
+        
+        /* 竖屏时隐藏场景内容 */
+        .scene-drawing.hidden-on-portrait {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- 竖屏提示层 -->
+    <div id="orientation-hint">
+        <div class="hint-icon">📱</div>
+        <div class="hint-text">请横屏观看</div>
+    </div>
+    
+    <div class="scene scene-drawing">
+        <button class="back-btn" onclick="goBack()">← 返回</button>
+        <div class="page-number">8/8</div>
+        
+        <div id="bige-container" style="position: fixed; top: calc(50% - 60px); left: calc(50% + 300px); transform: translate(-50%, -50%) scale(0.25); z-index: 97;">
+            <img src="../images/icons/bige.png" alt="bige" style="width: auto; height: auto; pointer-events: none;">
+        </div>
+        <div id="xvanzhi-container" style="position: fixed; top: calc(50% - 10px); left: 50%; transform: translate(-50%, -50%) scale(0.25); z-index: 98;">
+            <img src="../images/icons/xvanzhi.png" alt="xvanzhi" style="width: auto; height: auto; pointer-events: none;">
+        </div>
+        <div id="mo-wrapper" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.25); z-index: 99;">
+            <img id="mo-image" src="../images/icons/mo.png" alt="mo" style="width: auto; height: auto; pointer-events: none; display: block; opacity: 1;">
+            <canvas id="mo-mask" style="position: absolute; top: 0; left: 0; pointer-events: none; z-index: 100; display: none;"></canvas>
+        </div>
+        <div id="mokuang-container" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.25); z-index: 99;">
+            <img src="../images/icons/mokuang.png" alt="mokuang" style="width: auto; height: auto; pointer-events: none;">
+        </div>
+        <div id="tantai-container" style="position: fixed; top: calc(50% - 50px); left: calc(50% - 250px); transform: translate(-50%, -50%) scale(0.25); z-index: 100;">
+            <img src="../images/icons/yantai.png" alt="tantai" style="width: auto; height: auto; pointer-events: none;">
+        </div>
+        <div id="maobi-group" style="position: fixed; top: calc(50% + 70px); left: calc(50% + 250px); transform: translate(-50%, -50%) scale(0.25); transform-origin: 50% 40%; z-index: 101; display: inline-block; user-select: none; -webkit-user-select: none; transition: transform 0.3s ease-out;">
+            <img src="../images/icons/maobi.png" alt="maobi" style="display: block; width: auto; height: auto; pointer-events: none; -webkit-user-drag: none;">
+            <img id="maobimo-img" src="../images/icons/maobimo.png" alt="maobimo" style="position: absolute; left: 0; top: 0; width: auto; height: auto; pointer-events: none; opacity: 0; -webkit-user-drag: none;">
+            <div id="maobi-handle" style="position: absolute; left: 50%; top: 40%; width: 480px; height: 480px; transform: translate(-50%, -50%); border: none; background: transparent; border-radius: 50%; cursor: grab; touch-action: none;"></div>
+        </div>
+        <div id="tip-circle" style="position: fixed; width: 15px; height: 15px; border-radius: 50%; background: transparent; border: none; pointer-events: none; z-index: 200;"></div>
+        <div id="drawing-hint" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1200; pointer-events: none;">
+            <div style="font-family: 'KaiTi', '楷体', serif; font-size: 1.15rem; font-weight: bold; color: #f5e6b3; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75); background: rgba(26, 26, 46, 0.78); border: 1px solid rgba(212, 175, 55, 0.7); border-radius: 999px; padding: 10px 24px; white-space: nowrap;">
+                先用毛笔蘸取墨水，然后在宣纸上写下提示的字
+            </div>
+        </div>
+        
+        <button class="refresh-btn" onclick="location.reload()"></button>
+        <button id="finish-btn" class="finish-btn" onclick="goToPage('../index.html')">结束</button>
+    </div>
+    
+    <script src="../js/main.js"></script>
+    <script>
+    (function() {
+        // 屏幕方向检测
+        const orientationHint = document.getElementById('orientation-hint');
+        const sceneDrawing = document.querySelector('.scene-drawing');
+        
+        function checkOrientation() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (!isMobile) {
+                // 非移动端不显示提示
+                orientationHint.classList.remove('visible');
+                sceneDrawing.classList.remove('hidden-on-portrait');
+                return;
+            }
+            
+            const isPortrait = window.innerHeight > window.innerWidth;
+            
+            if (isPortrait) {
+                // 竖屏：显示提示，隐藏内容
+                orientationHint.classList.add('visible');
+                sceneDrawing.classList.add('hidden-on-portrait');
+            } else {
+                // 横屏：隐藏提示，显示内容
+                orientationHint.classList.remove('visible');
+                sceneDrawing.classList.remove('hidden-on-portrait');
+            }
+        }
+        
+        // 初始检查
+        checkOrientation();
+        
+        // 监听窗口大小变化和方向变化
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+        
+        // 元素引用
+        const maobiGroup = document.getElementById('maobi-group');
+        const maobiHandle = document.getElementById('maobi-handle');
+        const tantaiContainer = document.getElementById('tantai-container');
+        const maobimoImg = document.getElementById('maobimo-img');
+        const moWrapper = document.getElementById('mo-wrapper');
+        const moImage = document.getElementById('mo-image');
+        const moMask = document.getElementById('mo-mask');
+        const tipCircle = document.getElementById('tip-circle');
+        const finishBtn = document.getElementById('finish-btn');
+        
+        // 配置
+        const initialLeft = 'calc(50% + 250px)';
+        const initialTop = 'calc(50% + 70px)';
+        const initialTransform = 'translate(-50%, -50%) scale(0.25)';
+        const dragTransform = 'translate(-50%, -40%) scale(0.25) rotate(195deg)';
+        const REQUIRED_ERASES = 50;
+        
+        // 状态
+        let isDragging = false;
+        let isRotating = false;
+        let isMoDipped = false;
+        let frictionCount = 0;
+        let lastInZone = false;
+        let eraseCount = 0;
+        let hasShownFinishBtn = false;
+        let maskCtx = null;
+        
+        // 辅助函数：从事件获取坐标（支持触摸和鼠标）
+        function getPointFromEvent(e) {
+            if (e.touches && e.touches.length > 0) {
+                return e.touches[0];
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                return e.changedTouches[0];
+            }
+            return e;
+        }
+        
+        // 计算笔尖位置
+        function getTipPosition() {
+            const rect = maobimoImg.getBoundingClientRect();
+            return {
+                x: rect.left + rect.width / 2 - 36,
+                y: rect.top + rect.height - 6
+            };
+        }
+        
+        // 更新小圆圈位置
+        function updateTipCircle() {
+            const tip = getTipPosition();
+            tipCircle.style.left = (tip.x - 7.5) + 'px';
+            tipCircle.style.top = (tip.y - 7.5) + 'px';
+        }
+        
+        // 计算砚台中心位置
+        function getTantaiCenter() {
+            const rect = tantaiContainer.getBoundingClientRect();
+            return {
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2
+            };
+        }
+        
+        // 检查是否在砚台区域
+        function isInTantaiZone() {
+            if (!isDragging || isRotating) return false;
+            const tip = getTipPosition();
+            const center = getTantaiCenter();
+            const dist = Math.sqrt(Math.pow(tip.x - center.x, 2) + Math.pow(tip.y - center.y, 2));
+            return dist < 80;
+        }
+        
+        // 检查并显示结束按钮
+        function checkAndShowFinishBtn() {
+            if (hasShownFinishBtn) return;
+            if (eraseCount >= REQUIRED_ERASES) {
+                hasShownFinishBtn = true;
+                setTimeout(() => {
+                    finishBtn.classList.add('visible');
+                }, 7000);
+            }
+        }
+        
+        // 更新mask（墨图片显示）
+        function updateMask() {
+            if (!maskCtx) return;
+            try {
+                const dataUrl = moMask.toDataURL();
+                moImage.style.webkitMaskImage = `url(${dataUrl})`;
+                moImage.style.maskImage = `url(${dataUrl})`;
+            } catch (e) {
+                // 静默失败
+            }
+        }
+        
+        // 书写逻辑
+        function drawOnMo(tip) {
+            const moRect = moWrapper.getBoundingClientRect();
+            if (tip.x >= moRect.left && tip.x <= moRect.right &&
+                tip.y >= moRect.top && tip.y <= moRect.bottom) {
+                
+                eraseCount++;
+                
+                // 在mask上画不透明圆点
+                if (maskCtx) {
+                    try {
+                        const x = (tip.x - moRect.left) / 0.25;
+                        const y = (tip.y - moRect.top) / 0.25;
+                        const r = 15 / 2 / 0.25;
+                        
+                        maskCtx.save();
+                        maskCtx.fillStyle = 'black';
+                        maskCtx.beginPath();
+                        maskCtx.arc(x, y, r, 0, Math.PI * 2);
+                        maskCtx.fill();
+                        maskCtx.restore();
+                        
+                        updateMask();
+                    } catch (e) {
+                        // 静默失败
+                    }
+                }
+                
+                checkAndShowFinishBtn();
+            }
+        }
+        
+        // 开始拖拽
+        function startDrag(e) {
+            isDragging = true;
+            isRotating = true;
+            frictionCount = 0;
+            lastInZone = false;
+            
+            const point = getPointFromEvent(e);
+            
+            maobiHandle.style.cursor = 'grabbing';
+            maobiGroup.style.transition = 'transform 0.3s ease-out';
+            maobiGroup.style.left = point.clientX + 'px';
+            maobiGroup.style.top = point.clientY + 'px';
+            maobiGroup.style.transform = dragTransform;
+            
+            setTimeout(() => isRotating = false, 300);
+            
+            // 绑定事件
+            document.addEventListener('pointermove', moveDrag);
+            document.addEventListener('mousemove', moveDrag);
+            document.addEventListener('touchmove', moveDrag, { passive: false });
+            document.addEventListener('pointerup', endDrag);
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+            document.addEventListener('pointercancel', endDrag);
+            
+            if (e.pointerId !== undefined) {
+                maobiHandle.setPointerCapture(e.pointerId);
+            }
+            if (e.cancelable) e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // 拖拽中
+        function moveDrag(e) {
+            if (!isDragging || isRotating) return;
+            
+            const point = getPointFromEvent(e);
+            
+            maobiGroup.style.transition = 'none';
+            maobiGroup.style.left = point.clientX + 'px';
+            maobiGroup.style.top = point.clientY + 'px';
+            
+            updateTipCircle();
+            
+            if (!isMoDipped) {
+                const inZone = isInTantaiZone();
+                if (inZone !== lastInZone && inZone) {
+                    frictionCount++;
+                    if (frictionCount >= 4) {
+                        isMoDipped = true;
+                        maobimoImg.style.transition = 'opacity 1s ease-in-out';
+                        maobimoImg.style.opacity = '1';
+                    }
+                }
+                lastInZone = inZone;
+            } else {
+                drawOnMo(getTipPosition());
+            }
+            
+            if (e.cancelable) e.preventDefault();
+        }
+        
+        // 结束拖拽
+        function endDrag() {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            isRotating = false;
+            maobiHandle.style.cursor = 'grab';
+            
+            maobiGroup.style.transition = 'transform 0.25s ease-out, left 0.25s ease-out, top 0.25s ease-out';
+            maobiGroup.style.left = initialLeft;
+            maobiGroup.style.top = initialTop;
+            maobiGroup.style.transform = initialTransform;
+            
+            // 解绑事件
+            document.removeEventListener('pointermove', moveDrag);
+            document.removeEventListener('mousemove', moveDrag);
+            document.removeEventListener('touchmove', moveDrag);
+            document.removeEventListener('pointerup', endDrag);
+            document.removeEventListener('mouseup', endDrag);
+            document.removeEventListener('touchend', endDrag);
+            document.removeEventListener('pointercancel', endDrag);
+        }
+        
+        // 初始化
+        function init() {
+            // 加载图片，初始化mask
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = function() {
+                moMask.width = img.width;
+                moMask.height = img.height;
+                maskCtx = moMask.getContext('2d');
+                maskCtx.clearRect(0, 0, moMask.width, moMask.height); // 初始完全透明
+                updateMask(); // 初始应用空mask，墨图片不可见
+            };
+            img.onerror = function() {
+                maskCtx = null;
+            };
+            img.src = '../images/icons/mo.png';
+            
+            updateTipCircle();
+        }
+        
+        // 绑定事件
+        maobiHandle.addEventListener('pointerdown', startDrag);
+        maobiHandle.addEventListener('mousedown', startDrag);
+        maobiHandle.addEventListener('touchstart', startDrag, { passive: false });
+        
+        // 移动端触摸事件（额外绑定，确保可靠）
+        document.addEventListener('touchmove', function(e) {
+            if (isDragging && !isRotating && isMoDipped) {
+                const touch = e.touches[0];
+                drawOnMo(getTipPosition());
+                maobiGroup.style.transition = 'none';
+                maobiGroup.style.left = touch.clientX + 'px';
+                maobiGroup.style.top = touch.clientY + 'px';
+                updateTipCircle();
+            }
+        }, { passive: false });
+        document.addEventListener('touchend', endDrag);
+        document.addEventListener('touchcancel', endDrag);
+        
+        // 启动
+        init();
+    })();
+    </script>
+</body>
+</html>

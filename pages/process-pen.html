@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文房四宝 - 处理笔杆</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="scene scene-process">
+        <button class="back-btn" onclick="goBack()">← 返回</button>
+        <div class="page-number" style="z-index: 1001;">3/8</div>
+        
+        <div class="content">
+            <div id="bangmaoliao-container" style="position: fixed; top: 50%; left: 50%; transform: translate(calc(-50% - 300px), calc(-50% - 100px)); z-index: 100;">
+                <img src="../images/icons/bangmaoliao.png" alt="bangmaoliao" style="width: 800px; height: auto; pointer-events: none;">
+                <div id="bangmaoliao-handle" style="position: absolute; top: 50%; left: 50%; width: 100px; height: 100px; margin-left: -50px; margin-top: -50px; cursor: grab; pointer-events: auto;"></div>
+            </div>
+            
+            <div id="konggang-container" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 90; pointer-events: none;">
+                <img src="../images/icons/konggang.png" alt="konggang" style="width: 900px; height: auto;">
+            </div>
+            
+            <div id="suigang-container" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 91; pointer-events: none; opacity: 0; transition: opacity 1s ease-out;">
+                <img src="../images/icons/suigang.png" alt="suigang" style="width: 900px; height: auto;">
+            </div>
+            
+            <div id="caomuhui-container" style="position: fixed; top: 50%; left: 50%; transform: translate(calc(-50% + 300px), calc(-50% - 80px)); z-index: 95; pointer-events: none;">
+                <img src="../images/icons/caomuhui.png" alt="caomuhui" style="width: 900px; height: auto;">
+            </div>
+            
+            <div id="taoguan-container" style="position: fixed; top: 50%; left: 50%; transform: translate(calc(-50% + 300px), calc(-50% - 80px)); z-index: 96; pointer-events: none; user-select: none; -webkit-user-select: none; transition: top 0.4s ease-out, left 0.4s ease-out, transform 0.3s ease-out;">
+                <img src="../images/icons/taoguan.png" alt="taoguan" style="width: 900px; height: auto; display: block; pointer-events: none; -webkit-user-drag: none;">
+                <div id="taoguan-handle" style="position: absolute; top: 50%; left: 50%; width: 100px; height: 100px; margin-left: -50px; margin-top: -50px; cursor: grab; pointer-events: auto;"></div>
+            </div>
+            
+            <div id="taoguan-label" style="position: fixed; top: 50%; left: 50%; transform: translate(calc(-50% + 270px), calc(50% + 50px)); z-index: 97; pointer-events: none; font-size: 24px; color: #FFD700; text-align: center; white-space: nowrap;">草木灰溶液</div>
+            
+            <div id="process-pen-hint" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1200; pointer-events: none;">
+                <div id="process-pen-hint-text" style="font-family: 'KaiTi', '楷体', serif; font-size: 1.15rem; font-weight: bold; color: #f5e6b3; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75); background: rgba(26, 26, 46, 0.78); border: 1px solid rgba(212, 175, 55, 0.7); border-radius: 999px; padding: 10px 24px; white-space: nowrap;">
+                    将整理好的羊毛放入盆中
+                </div>
+            </div>
+            <button class="refresh-btn" onclick="location.reload()"></button>
+            
+            <div id="next-btn-container-fix" style="
+                position: fixed;
+                bottom: 50px;
+                left: 0;
+                right: 0;
+                text-align: center;
+                z-index: 2000;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.5s ease;
+            ">
+                <button id="next-btn-fix-3" onclick="goToPage('prep-brush.html')" style="
+                    padding: 15px 50px;
+                    background: linear-gradient(135deg, #d4af37, #b8860b);
+                    border: none;
+                    border-radius: 30px;
+                    color: #1a1a2e;
+                    font-family: 'STKaiti', 'Kaiti SC', serif;
+                    font-size: 1.4rem;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+                    pointer-events: auto;
+                    transform: scale(0.75);
+                    transform-origin: center center;
+                " onmouseover="this.style.transform='scale(0.81)'; this.style.boxShadow='0 6px 20px rgba(212, 175, 55, 0.6)'" onmouseout="this.style.transform='scale(0.75)'; this.style.boxShadow='0 4px 15px rgba(212, 175, 55, 0.4)'">
+                    下一步
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            currentStep = 0;
+            isProcessing = false;
+            isStepComplete = false;
+            initStep();
+        });
+    </script>
+    <script>
+    (function() {
+        var container = document.getElementById('taoguan-container');
+        var handle = document.getElementById('taoguan-handle');
+        var caomuhui = document.getElementById('caomuhui-container');
+        var suigang = document.getElementById('suigang-container');
+        if (!container || !handle) return;
+
+        var originalTransform = container.style.transform;
+        var originalZIndex = container.style.zIndex;
+
+        var isDragging = false;
+        var startX = 0;
+        var startY = 0;
+        var scale = 1;
+        var suigangShown = false;
+
+        function hideCaomuhui() {
+            if (caomuhui) {
+                caomuhui.style.opacity = '0';
+                caomuhui.style.transition = 'opacity 0.1s ease';
+            }
+        }
+
+        function showCaomuhui() {
+            if (caomuhui) {
+                caomuhui.style.opacity = '1';
+                caomuhui.style.transition = 'opacity 0.3s ease';
+            }
+        }
+
+        function checkSuigangReveal() {
+            if (suigangShown || !window.bangmaoliaoLocked) return;
+            
+            var suigangRect = suigang.getBoundingClientRect();
+            var containerRect = container.getBoundingClientRect();
+            
+            var suigangCenterX = suigangRect.left + suigangRect.width / 2;
+            var suigangCenterY = suigangRect.top + suigangRect.height / 2;
+            var containerCenterX = containerRect.left + containerRect.width / 2;
+            var containerCenterY = containerRect.top + containerRect.height / 2;
+
+            var distance = Math.sqrt(
+                Math.pow(containerCenterX - suigangCenterX, 2) +
+                Math.pow(containerCenterY - suigangCenterY, 2)
+            );
+
+            if (distance < 200) {
+                suigangShown = true;
+                suigang.style.opacity = '1';
+                checkStepComplete();
+            }
+        }
+
+        function checkStepComplete() {
+            if (window.bangmaoliaoLocked && suigangShown) {
+                var nextBtn = document.getElementById('next-btn-container-fix');
+                if (nextBtn) {
+                    setTimeout(function() {
+                        nextBtn.style.opacity = '1';
+                        nextBtn.style.pointerEvents = 'auto';
+                    }, 500);
+                }
+            }
+        }
+
+        function onPointerDown(e) {
+            isDragging = true;
+            handle.style.cursor = 'grabbing';
+            container.style.transition = 'none';
+            container.style.zIndex = '200';
+
+            hideCaomuhui();
+
+            var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+            startX = point.clientX;
+            startY = point.clientY;
+
+            var computedStyle = window.getComputedStyle(container);
+            var matrix = new DOMMatrix(computedStyle.transform);
+            scale = Math.sqrt(matrix.m11 * matrix.m11 + matrix.m12 * matrix.m12);
+
+            originalTransform = container.style.transform;
+
+            if (e.cancelable) e.preventDefault();
+        }
+
+        function onPointerMove(e) {
+            if (!isDragging) return;
+
+            var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+            var dx = point.clientX - startX;
+            var dy = point.clientY - startY;
+            container.style.transform = originalTransform + ' translate(' + (dx / scale) + 'px, ' + (dy / scale) + 'px) rotate(-30deg)';
+
+            checkSuigangReveal();
+        }
+
+        function onPointerUp() {
+            if (!isDragging) return;
+            isDragging = false;
+            handle.style.cursor = 'grab';
+
+            container.style.transition = 'transform 0.3s ease-out';
+            container.style.transform = originalTransform;
+            container.style.zIndex = originalZIndex;
+
+            setTimeout(showCaomuhui, 500);
+        }
+
+        handle.addEventListener('mousedown', onPointerDown);
+        document.addEventListener('mousemove', onPointerMove);
+        document.addEventListener('mouseup', onPointerUp);
+
+        handle.addEventListener('touchstart', onPointerDown, { passive: false });
+        document.addEventListener('touchmove', onPointerMove, { passive: false });
+        document.addEventListener('touchend', onPointerUp);
+    })();
+
+    (function() {
+        var container = document.getElementById('bangmaoliao-container');
+        var handle = document.getElementById('bangmaoliao-handle');
+        var konggang = document.getElementById('konggang-container');
+        if (!container || !handle) return;
+
+        var originalTransform = container.style.transform;
+        var originalZIndex = container.style.zIndex;
+
+        var isDragging = false;
+        var isLocked = false;
+        var startX = 0;
+        var startY = 0;
+        var scale = 1;
+
+        function onPointerDown(e) {
+            if (isLocked) return;
+            
+            isDragging = true;
+            handle.style.cursor = 'grabbing';
+            container.style.transition = 'none';
+            container.style.zIndex = '200';
+
+            var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+            startX = point.clientX;
+            startY = point.clientY;
+
+            var computedStyle = window.getComputedStyle(container);
+            var matrix = new DOMMatrix(computedStyle.transform);
+            scale = Math.sqrt(matrix.m11 * matrix.m11 + matrix.m12 * matrix.m12);
+
+            originalTransform = container.style.transform;
+
+            if (e.cancelable) e.preventDefault();
+        }
+
+        function onPointerMove(e) {
+            if (!isDragging) return;
+
+            var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+            var dx = point.clientX - startX;
+            var dy = point.clientY - startY;
+            container.style.transform = originalTransform + ' translate(' + (dx / scale) + 'px, ' + (dy / scale) + 'px)';
+        }
+
+        function onPointerUp() {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            handle.style.cursor = 'grab';
+
+            var konggangRect = konggang.getBoundingClientRect();
+            var containerRect = container.getBoundingClientRect();
+            
+            var konggangCenterX = konggangRect.left + konggangRect.width / 2;
+            var konggangCenterY = konggangRect.top + konggangRect.height / 2;
+            var containerCenterX = containerRect.left + containerRect.width / 2;
+            var containerCenterY = containerRect.top + containerRect.height / 2;
+
+            var distance = Math.sqrt(
+                Math.pow(containerCenterX - konggangCenterX, 2) +
+                Math.pow(containerCenterY - konggangCenterY, 2)
+            );
+
+            if (distance < 150) {
+                isLocked = true;
+                window.bangmaoliaoLocked = true;
+                container.style.transition = 'transform 0.3s ease-out';
+                container.style.transform = 'translate(-50%, -50%)';
+                container.style.zIndex = '92';
+                
+                var hintText = document.getElementById('process-pen-hint-text');
+                if (hintText) {
+                    hintText.textContent = '向盆中倒入草木灰溶液';
+                }
+            } else {
+                container.style.transition = 'transform 0.3s ease-out';
+                container.style.transform = originalTransform;
+                container.style.zIndex = originalZIndex;
+            }
+        }
+
+        handle.addEventListener('mousedown', onPointerDown);
+        document.addEventListener('mousemove', onPointerMove);
+        document.addEventListener('mouseup', onPointerUp);
+
+        handle.addEventListener('touchstart', onPointerDown, { passive: false });
+        document.addEventListener('touchmove', onPointerMove, { passive: false });
+        document.addEventListener('touchend', onPointerUp);
+    })();
+    </script>
+</body>
+</html>

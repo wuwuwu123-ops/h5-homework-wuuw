@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文房四宝 - 绑制笔头</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="scene scene-bind">
+        <button class="back-btn" onclick="goBack()">← 返回</button>
+        <div class="page-number">5/8</div>
+        
+        <div id="zhutong-container" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); z-index: 100; pointer-events: none; transform-origin: center center;">
+            <img src="../images/icons/zhutong.png" alt="zhutong" style="width: 800px; height: auto;">
+        </div>
+        
+        <div id="zhugan-container" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); z-index: 101; pointer-events: none; transform-origin: center center;">
+            <img src="../images/icons/zhugan.png" alt="zhugan" style="width: 800px; height: auto;">
+        </div>
+        
+        <div id="jvzi-container" style="position: fixed; top: 50%; left: 50%; transform: translate(calc(-50% + 250px), -50%) scale(0.078125); z-index: 102; pointer-events: none; transform-origin: center center;">
+            <img src="../images/icons/jvzi.png" alt="jvzi" style="width: 800px; height: auto; pointer-events: none;">
+        </div>
+        
+        <div id="huopen-container" style="position: fixed; top: 50%; left: 50%; transform: translate(calc(-50% - 5px), -50%) scale(0.4); z-index: 10000; pointer-events: none; transform-origin: center center; opacity: 0; transition: opacity 0.5s ease-out;">
+            <img src="../images/icons/huopen.png" alt="huopen" style="width: 800px; height: auto; pointer-events: none;">
+        </div>
+        
+        <div id="maojin-container" style="position: fixed; top: 50%; left: 50%; transform: translate(calc(-50% - 280px), calc(-50% + 20px)) scale(0.25); z-index: 9999; pointer-events: none; transform-origin: center center; opacity: 0; transition: opacity 0.5s ease-out;">
+            <img src="../images/icons/maojin.png" alt="maojin" style="width: 800px; height: auto; pointer-events: none;">
+        </div>
+        
+        <div id="liangzhutong-container" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); z-index: 10002; pointer-events: none; transform-origin: center center; opacity: 0; transition: opacity 10s ease-out;">
+            <img src="../images/icons/liangzhutong.png" alt="liangzhutong" style="width: 800px; height: auto; pointer-events: none;">
+        </div>
+        
+        <div id="jiazi-container" style="position: fixed; top: 50%; left: 50%; transform: translate(calc(-50% + 250px), -50%) rotate(-15deg) scale(0.0555); z-index: 10002; pointer-events: none; transform-origin: center center; opacity: 0; transition: opacity 0.5s ease-out;">
+            <img src="../images/icons/jiazi.png" alt="jiazi" style="width: 800px; height: auto; pointer-events: none;">
+        </div>
+        
+        <div id="left-dash-line" style="position: fixed; top: 10%; left: calc(25% + 115px); width: 4px; height: 80%; background: transparent; border-left: 4px dashed black; z-index: 9999; pointer-events: none; opacity: 1; transition: opacity 0.5s ease-out;"></div>
+        <div id="right-dash-line" style="position: fixed; top: 10%; left: calc(75% - 80px); width: 4px; height: 80%; background: transparent; border-left: 4px dashed black; z-index: 9999; pointer-events: none; opacity: 1; transition: opacity 0.5s ease-out;"></div>
+        
+        <div id="bind-brush-hint" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1200; pointer-events: none;">
+            <div id="bind-brush-hint-text" style="font-family: 'KaiTi', '楷体', serif; font-size: 1.15rem; font-weight: bold; color: #f5e6b3; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75); background: rgba(26, 26, 46, 0.78); border: 1px solid rgba(212, 175, 55, 0.7); border-radius: 999px; padding: 10px 24px; white-space: nowrap;">
+                用句子沿两条虚线将竹竿锯短成一节竹筒
+            </div>
+        </div>
+        <button class="refresh-btn" onclick="location.reload()"></button>
+        
+        <div class="hint-bottom">
+            <button class="next-btn" onclick="goToPage('trim-brush.html')"> 
+                <span class="arrow">下一步</span>
+            </button>
+        </div>
+    </div>
+    
+    <script src="../js/main.js"></script>
+    <script>
+        (function() {
+            // ==================== 第一部分：初始化 DOM ====================
+            var jvziContainer = document.getElementById('jvzi-container');
+            var zhuganContainer = document.getElementById('zhugan-container');
+            var zhutongContainer = document.getElementById('zhutong-container');
+            var huopenContainer = document.getElementById('huopen-container');
+            var maojinContainer = document.getElementById('maojin-container');
+            var jiaziContainer = document.getElementById('jiazi-container');
+            var liangzhutongContainer = document.getElementById('liangzhutong-container');
+            var leftDashLine = document.getElementById('left-dash-line');
+            var rightDashLine = document.getElementById('right-dash-line');
+            var nextBtn = document.querySelector('.next-btn');
+            if (!jvziContainer || !zhuganContainer || !zhutongContainer || !huopenContainer || !maojinContainer || !jiaziContainer || !liangzhutongContainer || !leftDashLine || !rightDashLine || !nextBtn) return;
+
+            // ==================== 第二部分：设置拖动句柄 ====================
+            // 锯子拖动句柄
+            var jvziHandle = document.createElement('div');
+            jvziHandle.style.position = 'absolute';
+            jvziHandle.style.top = 'calc(75% + 20px)';
+            jvziHandle.style.left = '50%';
+            jvziHandle.style.width = '400px';
+            jvziHandle.style.height = '400px';
+            jvziHandle.style.marginLeft = '-200px';
+            jvziHandle.style.marginTop = '-200px';
+            jvziHandle.style.cursor = 'grab';
+            jvziHandle.style.pointerEvents = 'auto';
+            jvziContainer.appendChild(jvziHandle);
+
+            // 夹子拖动句柄
+            var jiaziHandle = document.createElement('div');
+            jiaziHandle.style.position = 'absolute';
+            jiaziHandle.style.top = '68%';
+            jiaziHandle.style.left = '50%';
+            jiaziHandle.style.width = '500px';
+            jiaziHandle.style.height = '500px';
+            jiaziHandle.style.marginLeft = '-250px';
+            jiaziHandle.style.marginTop = '-250px';
+            jiaziHandle.style.cursor = 'grab';
+            jiaziHandle.style.pointerEvents = 'auto';
+            jiaziHandle.style.background = 'transparent';
+            jiaziContainer.appendChild(jiaziHandle);
+
+            // ==================== 第三部分：状态变量 ====================
+            // 锯子交互状态
+            var isDragging = false;
+            var offsetX = 0, offsetY = 0;
+            var leftFrictionCount = 0, rightFrictionCount = 0;
+            var leftLastX = 0, rightLastX = 0;
+            var leftDirection = 0, rightDirection = 0;
+            var leftLineHidden = false, rightLineHidden = false;
+            var zhuganHidden = false;
+            var animationInProgress = false;
+            var readyToStartAnimation = false;
+
+            // 保存原始样式
+            var jvziOriginalStyles = {
+                left: jvziContainer.style.left,
+                top: jvziContainer.style.top,
+                transform: jvziContainer.style.transform,
+                zIndex: jvziContainer.style.zIndex
+            };
+
+            // 夹子交互状态
+            var isJiaziDragging = false;
+            var jiaziOffsetX = 0, jiaziOffsetY = 0;
+            var isZhutongAttached = false;
+            var zhutongFinalPositionSet = false;
+            var zhutongAfterAnimation = false;
+
+            var jiaziOriginalStyles = {
+                left: jiaziContainer.style.left,
+                top: jiaziContainer.style.top,
+                transform: jiaziContainer.style.transform,
+                zIndex: jiaziContainer.style.zIndex
+            };
+
+            // 吸附时的位置记录
+            var jiaziAttachStartX = 0, jiaziAttachStartY = 0; // 夹子吸附时的中心
+            var zhutongAttachStartX = 0, zhutongAttachStartY = 0; // 竹筒吸附时的中心
+
+            // liangzhutong的状态
+            var liangzhutongReady = false; // liangzhutong是否已经完全显现并且可以被拖动
+            var isLiangzhutongAttached = false; // liangzhutong是否正在被夹子带动
+            var liangzhutongAttachStartX = 0, liangzhutongAttachStartY = 0; // liangzhutong在吸附时的中心
+            var liangzhutongOriginalX = 0, liangzhutongOriginalY = 0; // liangzhutong的原始位置中心
+            var liangzhutongOriginalTransform = ''; // liangzhutong的原始transform
+
+            // ==================== 第四部分：锯子交互逻辑（保持原样） ====================
+            function isJvziOverLeftLine() {
+                var jvziRect = jvziContainer.getBoundingClientRect();
+                var lineRect = leftDashLine.getBoundingClientRect();
+                var jvziCenterX = jvziRect.left + jvziRect.width / 2;
+                var jvziCenterY = jvziRect.top + jvziRect.height / 2;
+                var zhuganRect = zhuganContainer.getBoundingClientRect();
+                var isOverLine = Math.abs(jvziCenterX - lineRect.left) < 30;
+                var isInZhuganHeight = jvziCenterY >= zhuganRect.top && jvziCenterY <= zhuganRect.bottom;
+                return isOverLine && isInZhuganHeight;
+            }
+
+            function isJvziOverRightLine() {
+                var jvziRect = jvziContainer.getBoundingClientRect();
+                var lineRect = rightDashLine.getBoundingClientRect();
+                var jvziCenterX = jvziRect.left + jvziRect.width / 2;
+                var jvziCenterY = jvziRect.top + jvziRect.height / 2;
+                var zhuganRect = zhuganContainer.getBoundingClientRect();
+                var isOverLine = Math.abs(jvziCenterX - lineRect.left) < 30;
+                var isInZhuganHeight = jvziCenterY >= zhuganRect.top && jvziCenterY <= zhuganRect.bottom;
+                return isOverLine && isInZhuganHeight;
+            }
+
+            function onJvziPointerDown(e) {
+                isDragging = true;
+                jvziHandle.style.cursor = 'grabbing';
+                jvziContainer.style.zIndex = '200';
+                var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+                const rect = jvziContainer.getBoundingClientRect();
+                offsetX = point.clientX - (rect.left + rect.width / 2);
+                offsetY = point.clientY - (rect.top + rect.height / 2);
+                jvziContainer.style.transition = 'none';
+                jvziContainer.style.left = (rect.left + rect.width / 2) + 'px';
+                jvziContainer.style.top = (rect.top + rect.height / 2) + 'px';
+                jvziContainer.style.transform = 'translate(-50%, -50%) rotate(30deg) scale(0.078125)';
+                leftLastX = point.clientX;
+                rightLastX = point.clientX;
+                leftDirection = 0;
+                rightDirection = 0;
+                if (e.cancelable) e.preventDefault();
+            }
+
+            function onJvziPointerMove(e) {
+                if (!isDragging) return;
+                var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+                jvziContainer.style.left = (point.clientX - offsetX) + 'px';
+                jvziContainer.style.top = (point.clientY - offsetY) + 'px';
+
+                if (!leftLineHidden && isJvziOverLeftLine()) {
+                    var currentX = point.clientX;
+                    var direction = currentX > leftLastX ? 1 : (currentX < leftLastX ? -1 : 0);
+                    if (direction !== 0 && direction !== leftDirection && leftDirection !== 0) {
+                        leftFrictionCount++;
+                        if (leftFrictionCount >= 6) {
+                            leftDashLine.style.opacity = '0';
+                            leftLineHidden = true;
+                            checkBothLinesHidden();
+                        }
+                    }
+                    if (direction !== 0) leftDirection = direction;
+                    leftLastX = currentX;
+                }
+
+                if (!rightLineHidden && isJvziOverRightLine()) {
+                    var currentX = point.clientX;
+                    var direction = currentX > rightLastX ? 1 : (currentX < rightLastX ? -1 : 0);
+                    if (direction !== 0 && direction !== rightDirection && rightDirection !== 0) {
+                        rightFrictionCount++;
+                        if (rightFrictionCount >= 6) {
+                            rightDashLine.style.opacity = '0';
+                            rightLineHidden = true;
+                            checkBothLinesHidden();
+                        }
+                    }
+                    if (direction !== 0) rightDirection = direction;
+                    rightLastX = currentX;
+                }
+            }
+
+            function checkBothLinesHidden() {
+                if (leftLineHidden && rightLineHidden && !zhuganHidden) {
+                    zhuganHidden = true;
+                    readyToStartAnimation = true;
+                    
+                    var hintText = document.getElementById('bind-brush-hint-text');
+                    if (hintText) {
+                        hintText.textContent = '用夹子夹起竹筒，放入火盆中加固';
+                    }
+                }
+            }
+
+            function startAnimationSequence() {
+                if (!readyToStartAnimation || animationInProgress) return;
+                animationInProgress = true;
+                jvziHandle.style.pointerEvents = 'none';
+                jvziHandle.style.cursor = 'default';
+
+                setTimeout(function() {
+                    zhuganContainer.style.transition = 'opacity 1s ease-out';
+                    zhuganContainer.style.opacity = '0';
+                    setTimeout(function() {
+                        zhutongContainer.style.transition = 'all 1s ease-out';
+                        zhutongContainer.style.transform = 'translate(calc(-50% - 400px), calc(-50% - 30px)) rotate(90deg) scale(0.5)';
+                        setTimeout(function() {
+                            jvziContainer.style.transition = 'all 0.5s ease-out';
+                            jvziContainer.style.transform = 'translate(calc(-50% + ' + (window.innerWidth + 500) + 'px), -50%) scale(0.078125)';
+                            setTimeout(function() {
+                                huopenContainer.style.opacity = '1';
+                                maojinContainer.style.opacity = '1';
+                                jiaziContainer.style.opacity = '1';
+                                zhutongAfterAnimation = true;
+                            }, 500);
+                        }, 1000);
+                    }, 1000);
+                }, 2000);
+            }
+
+            function onJvziPointerUp() {
+                if (!isDragging || animationInProgress) return;
+                isDragging = false;
+                jvziHandle.style.cursor = 'grab';
+                jvziContainer.style.transition = 'all 0.3s ease-out';
+                jvziContainer.style.left = jvziOriginalStyles.left;
+                jvziContainer.style.top = jvziOriginalStyles.top;
+                jvziContainer.style.transform = jvziOriginalStyles.transform;
+                jvziContainer.style.zIndex = jvziOriginalStyles.zIndex;
+                if (readyToStartAnimation) {
+                    setTimeout(startAnimationSequence, 400);
+                }
+            }
+
+            // ==================== 第五部分：夹子吸附竹筒逻辑（重写） ====================
+            function isJiaziTopOverZhutong() {
+                var jiaziRect = jiaziContainer.getBoundingClientRect();
+                // 夹子前 1/5 区域
+                var jiaziClipTop = jiaziRect.top;
+                var jiaziClipBottom = jiaziRect.top + jiaziRect.height * 0.2;
+                var jiaziClipLeft = jiaziRect.left;
+                var jiaziClipRight = jiaziRect.right;
+
+                var zhutongRect = zhutongContainer.getBoundingClientRect();
+                // 竹筒中间 1/2 区域
+                var zhutongClipTop = zhutongRect.top + zhutongRect.height * 0.25;
+                var zhutongClipBottom = zhutongRect.top + zhutongRect.height * 0.75;
+                var zhutongClipLeft = zhutongRect.left + zhutongRect.width * 0.25;
+                var zhutongClipRight = zhutongRect.left + zhutongRect.width * 0.75;
+
+                // 判定两个矩形是否重叠
+                return !(jiaziClipRight < zhutongClipLeft ||
+                         jiaziClipLeft > zhutongClipRight ||
+                         jiaziClipBottom < zhutongClipTop ||
+                         jiaziClipTop > zhutongClipBottom);
+            }
+
+            // 判断夹子上1/5是否碰到亮竹筒中间
+            function isJiaziTopOverLiangMiddle() {
+                var jiaziRect = jiaziContainer.getBoundingClientRect();
+                // 夹子上 1/5 区域
+                var jiaziClipTop = jiaziRect.top;
+                var jiaziClipBottom = jiaziRect.top + jiaziRect.height * 0.2;
+                var jiaziClipLeft = jiaziRect.left;
+                var jiaziClipRight = jiaziRect.right;
+
+                var liangRect = liangzhutongContainer.getBoundingClientRect();
+                // 亮竹筒中间 1/2 区域
+                var liangClipTop = liangRect.top + liangRect.height * 0.25;
+                var liangClipBottom = liangRect.top + liangRect.height * 0.75;
+                var liangClipLeft = liangRect.left + liangRect.width * 0.25;
+                var liangClipRight = liangRect.left + liangRect.width * 0.75;
+
+                // 判定两个矩形是否重叠
+                return !(jiaziClipRight < liangClipLeft ||
+                         jiaziClipLeft > liangClipRight ||
+                         jiaziClipBottom < liangClipTop ||
+                         jiaziClipTop > liangClipBottom);
+            }
+
+            function isJiaziOverHuopen() {
+                var jiaziRect = jiaziContainer.getBoundingClientRect();
+                var jiaziCenterX = jiaziRect.left + jiaziRect.width / 2;
+                var jiaziCenterY = jiaziRect.top + jiaziRect.height / 2;
+                var huopenRect = huopenContainer.getBoundingClientRect();
+                return jiaziCenterX >= huopenRect.left && jiaziCenterX <= huopenRect.right &&
+                       jiaziCenterY >= huopenRect.top && jiaziCenterY <= huopenRect.bottom;
+            }
+
+            // 判断夹子是否在毛巾区域
+            function isJiaziOverMaojin() {
+                var jiaziRect = jiaziContainer.getBoundingClientRect();
+                var jiaziCenterX = jiaziRect.left + jiaziRect.width / 2;
+                var jiaziCenterY = jiaziRect.top + jiaziRect.height / 2;
+                var maojinRect = maojinContainer.getBoundingClientRect();
+                return jiaziCenterX >= maojinRect.left && jiaziCenterX <= maojinRect.right &&
+                       jiaziCenterY >= maojinRect.top && jiaziCenterY <= maojinRect.bottom;
+            }
+
+            // 辅助：获取元素当前屏幕中心坐标
+            function getElementCenter(elem) {
+                var rect = elem.getBoundingClientRect();
+                return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            }
+
+            // 辅助：设置元素到屏幕坐标（通过 left/top + translate(-50%,-50%)）
+            function setElementCenter(elem, x, y) {
+                elem.style.left = x + 'px';
+                elem.style.top = y + 'px';
+            }
+
+            function onJiaziPointerDown(e) {
+                var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+                var rect = jiaziContainer.getBoundingClientRect();
+                isJiaziDragging = true;
+                jiaziHandle.style.cursor = 'grabbing';
+                jiaziContainer.style.zIndex = '10003';
+                jiaziContainer.style.transition = 'none';
+                setElementCenter(jiaziContainer, rect.left + rect.width / 2, rect.top + rect.height / 2);
+                jiaziContainer.style.transform = 'translate(-50%, -50%) rotate(-15deg) scale(0.0555)';
+                jiaziOffsetX = point.clientX - (rect.left + rect.width / 2);
+                jiaziOffsetY = point.clientY - (rect.top + rect.height / 2);
+
+                if (liangzhutongReady && isJiaziTopOverLiangMiddle()) {
+                    // 如果liangzhutong已经准备好了，并且夹子上1/5碰到它中间，就带动它
+                    isLiangzhutongAttached = true;
+                    liangzhutongContainer.style.transition = 'none';
+                    var jiaziCenter = getElementCenter(jiaziContainer);
+                    var liangCenter = getElementCenter(liangzhutongContainer);
+                    jiaziAttachStartX = jiaziCenter.x;
+                    jiaziAttachStartY = jiaziCenter.y;
+                    liangzhutongAttachStartX = liangCenter.x;
+                    liangzhutongAttachStartY = liangCenter.y;
+                    // 确保liangzhutong的定位是绝对坐标
+                    setElementCenter(liangzhutongContainer, liangzhutongAttachStartX, liangzhutongAttachStartY);
+                    liangzhutongContainer.style.transform = 'translate(-50%, -50%) rotate(0deg) scale(0.5)';
+                } else if (zhutongAfterAnimation && !zhutongFinalPositionSet && !isZhutongAttached && isJiaziTopOverZhutong()) {
+                    isZhutongAttached = true;
+                    zhutongContainer.style.zIndex = '10001'; // 放到夹子下方
+                    zhutongContainer.style.transition = 'none';
+                    // 记录吸附时的中心
+                    var jiaziCenter = getElementCenter(jiaziContainer);
+                    var zhutongCenter = getElementCenter(zhutongContainer);
+                    jiaziAttachStartX = jiaziCenter.x;
+                    jiaziAttachStartY = jiaziCenter.y;
+                    zhutongAttachStartX = zhutongCenter.x;
+                    zhutongAttachStartY = zhutongCenter.y;
+                    // 把竹筒的定位也改成绝对坐标，不动它的位置
+                    setElementCenter(zhutongContainer, zhutongAttachStartX, zhutongAttachStartY);
+                    zhutongContainer.style.transform = 'translate(-50%, -50%) rotate(90deg) scale(0.5)';
+                }
+
+                if (e.cancelable) e.preventDefault();
+            }
+
+            function onJiaziPointerMove(e) {
+                if (!isJiaziDragging) return;
+                var point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+                var newJiaziX = point.clientX - jiaziOffsetX;
+                var newJiaziY = point.clientY - jiaziOffsetY;
+                setElementCenter(jiaziContainer, newJiaziX, newJiaziY);
+
+                if (liangzhutongReady) {
+                    // 拖动过程中也可能刚碰到亮竹筒
+                    if (!isLiangzhutongAttached && isJiaziTopOverLiangMiddle()) {
+                        isLiangzhutongAttached = true;
+                        liangzhutongContainer.style.transition = 'none';
+                        var jiaziCenter = getElementCenter(jiaziContainer);
+                        var liangCenter = getElementCenter(liangzhutongContainer);
+                        jiaziAttachStartX = jiaziCenter.x;
+                        jiaziAttachStartY = jiaziCenter.y;
+                        liangzhutongAttachStartX = liangCenter.x;
+                        liangzhutongAttachStartY = liangCenter.y;
+                        setElementCenter(liangzhutongContainer, liangzhutongAttachStartX, liangzhutongAttachStartY);
+                        liangzhutongContainer.style.transform = 'translate(-50%, -50%) rotate(0deg) scale(0.5)';
+                    }
+
+                    // 吸附了亮竹筒就跟着走
+                    if (isLiangzhutongAttached) {
+                        var deltaX = newJiaziX - jiaziAttachStartX;
+                        var deltaY = newJiaziY - jiaziAttachStartY;
+                        var newLiangX = liangzhutongAttachStartX + deltaX;
+                        var newLiangY = liangzhutongAttachStartY + deltaY;
+                        setElementCenter(liangzhutongContainer, newLiangX, newLiangY);
+                        liangzhutongContainer.style.transform = 'translate(-50%, -50%) rotate(0deg) scale(0.5)';
+                    }
+                } else if (!zhutongFinalPositionSet) {
+                    // 之前的竹筒逻辑
+                    // 拖动过程中也可能刚碰到竹筒
+                    if (zhutongAfterAnimation && !zhutongFinalPositionSet && !isZhutongAttached && isJiaziTopOverZhutong()) {
+                        isZhutongAttached = true;
+                        zhutongContainer.style.zIndex = '10001'; // 放到夹子下方
+                        zhutongContainer.style.transition = 'none';
+                        var jiaziCenter = getElementCenter(jiaziContainer);
+                        var zhutongCenter = getElementCenter(zhutongContainer);
+                        jiaziAttachStartX = jiaziCenter.x;
+                        jiaziAttachStartY = jiaziCenter.y;
+                        zhutongAttachStartX = zhutongCenter.x;
+                        zhutongAttachStartY = zhutongCenter.y;
+                        setElementCenter(zhutongContainer, zhutongAttachStartX, zhutongAttachStartY);
+                        zhutongContainer.style.transform = 'translate(-50%, -50%) rotate(90deg) scale(0.5)';
+                    }
+
+                    // 吸附了竹筒就跟着走
+                    if (isZhutongAttached) {
+                        var deltaX = newJiaziX - jiaziAttachStartX;
+                        var deltaY = newJiaziY - jiaziAttachStartY;
+                        var newZhutongX = zhutongAttachStartX + deltaX;
+                        var newZhutongY = zhutongAttachStartY + deltaY;
+                        setElementCenter(zhutongContainer, newZhutongX, newZhutongY);
+                        zhutongContainer.style.transform = 'translate(-50%, -50%) rotate(90deg) scale(0.5)';
+                    }
+                }
+
+                if (e.cancelable) e.preventDefault();
+            }
+
+            function onJiaziPointerUp() {
+                if (!isJiaziDragging) return;
+                isJiaziDragging = false;
+                jiaziHandle.style.cursor = 'grab';
+
+                if (liangzhutongReady && isLiangzhutongAttached) {
+                    // 处理liangzhutong的情况
+                    if (isJiaziOverMaojin()) {
+                        // 松手在毛巾区域，让liangzhutong顺时针旋转110度，固定放在毛巾的正中间，向上偏移30像素
+                        var maojinRect = maojinContainer.getBoundingClientRect();
+                        var targetLiangX = maojinRect.left + maojinRect.width / 2; // 毛巾中间X
+                        var targetLiangY = maojinRect.top + maojinRect.height / 2 - 30; // 毛巾中间Y，向上移动30像素
+
+                        liangzhutongContainer.style.transition = 'all 0.8s ease-out';
+                        setElementCenter(liangzhutongContainer, targetLiangX, targetLiangY);
+                        liangzhutongContainer.style.transform = 'translate(-50%, -50%) rotate(110deg) scale(0.5)';
+                        isLiangzhutongAttached = false;
+                        // 更新liangzhutong的原位为新位置
+                        liangzhutongOriginalX = targetLiangX;
+                        liangzhutongOriginalY = targetLiangY;
+                        liangzhutongOriginalTransform = liangzhutongContainer.style.transform;
+
+                        // 夹子回原位
+                        setTimeout(function() {
+                            jiaziContainer.style.transition = 'all 0.5s ease-out';
+                            jiaziContainer.style.left = jiaziOriginalStyles.left;
+                            jiaziContainer.style.top = jiaziOriginalStyles.top;
+                            jiaziContainer.style.transform = jiaziOriginalStyles.transform;
+                            jiaziContainer.style.zIndex = jiaziOriginalStyles.zIndex;
+                            
+                            // 夹子回位后，下一步按钮浮现
+                            setTimeout(function() {
+                                nextBtn.style.opacity = '1';
+                                nextBtn.style.pointerEvents = 'auto';
+                            }, 500);
+                        }, 800);
+                    } else {
+                        // 没在毛巾区域，把liangzhutong和夹子都同步回各自原位
+                        liangzhutongContainer.style.transition = 'all 0.5s ease-out';
+                        setElementCenter(liangzhutongContainer, liangzhutongOriginalX, liangzhutongOriginalY);
+                        liangzhutongContainer.style.transform = liangzhutongOriginalTransform;
+                        isLiangzhutongAttached = false;
+
+                        // 夹子回原位
+                        jiaziContainer.style.transition = 'all 0.5s ease-out';
+                        jiaziContainer.style.left = jiaziOriginalStyles.left;
+                        jiaziContainer.style.top = jiaziOriginalStyles.top;
+                        jiaziContainer.style.transform = jiaziOriginalStyles.transform;
+                        jiaziContainer.style.zIndex = jiaziOriginalStyles.zIndex;
+                    }
+                } else if (liangzhutongReady && !isLiangzhutongAttached) {
+                    // 没吸附住liangzhutong就松手，夹子回原位
+                    jiaziContainer.style.transition = 'all 0.5s ease-out';
+                    jiaziContainer.style.left = jiaziOriginalStyles.left;
+                    jiaziContainer.style.top = jiaziOriginalStyles.top;
+                    jiaziContainer.style.transform = jiaziOriginalStyles.transform;
+                    jiaziContainer.style.zIndex = jiaziOriginalStyles.zIndex;
+                } else if (isZhutongAttached && isJiaziOverHuopen()) {
+                    // 放上火盆：逆时针转90度（90→0），放在火盆中间偏上，总共向上20像素
+                    var huopenRect = huopenContainer.getBoundingClientRect();
+                    var targetX = huopenRect.left + huopenRect.width / 2;
+                    var targetY = huopenRect.top + huopenRect.height * 0.3 - 20;
+                    zhutongContainer.style.transition = 'all 0.8s ease-out';
+                    zhutongContainer.style.zIndex = '10001'; // 确保在火盆上方（火盆10000）
+                    setElementCenter(zhutongContainer, targetX, targetY);
+                    zhutongContainer.style.transform = 'translate(-50%, -50%) rotate(0deg) scale(0.5)';
+
+                    isZhutongAttached = false;
+                    zhutongFinalPositionSet = true;
+
+                    // 夹子回原位
+                    setTimeout(function() {
+                        jiaziContainer.style.transition = 'all 0.5s ease-out';
+                        jiaziContainer.style.left = jiaziOriginalStyles.left;
+                        jiaziContainer.style.top = jiaziOriginalStyles.top;
+                        jiaziContainer.style.transform = jiaziOriginalStyles.transform;
+                        jiaziContainer.style.zIndex = jiaziOriginalStyles.zIndex;
+                    }, 800);
+
+                    // 等竹筒完全放好之后，让liangzhutong跟随显示出来
+                    setTimeout(function() {
+                        liangzhutongContainer.style.left = targetX + 'px';
+                        liangzhutongContainer.style.top = targetY + 'px';
+                        liangzhutongContainer.style.transform = 'translate(-50%, -50%) rotate(0deg) scale(0.5)';
+                        liangzhutongContainer.style.zIndex = '10002'; // 在竹筒上方
+                        liangzhutongContainer.style.opacity = '1';
+
+                        // 等liangzhutong 10秒动画结束之后，让原来的竹筒消失，记录liangzhutong的原位
+                        setTimeout(function() {
+                            liangzhutongReady = true;
+                            // 原来的竹筒消失
+                            zhutongContainer.style.opacity = '0';
+                            // 记录liangzhutong的原位
+                            var liangCenter = getElementCenter(liangzhutongContainer);
+                            liangzhutongOriginalX = liangCenter.x;
+                            liangzhutongOriginalY = liangCenter.y;
+                            liangzhutongOriginalTransform = liangzhutongContainer.style.transform;
+                            
+                            var hintText = document.getElementById('bind-brush-hint-text');
+                            if (hintText) {
+                                hintText.textContent = '用夹子夹起烧过的竹筒放到毛巾上冷却';
+                            }
+                        }, 10000); // liangzhutong动画10秒结束
+                    }, 800);
+                } else {
+                    // 没放上火盆，或者没准备好liangzhutong的情况
+                    if (isZhutongAttached) {
+                        var screenCenterX = window.innerWidth / 2;
+                        var screenCenterY = window.innerHeight / 2;
+                        var zhutongTargetX = screenCenterX - 400;
+                        var zhutongTargetY = screenCenterY - 30;
+                        zhutongContainer.style.transition = 'all 0.5s ease-out';
+                        setElementCenter(zhutongContainer, zhutongTargetX, zhutongTargetY);
+                        zhutongContainer.style.transform = 'translate(-50%, -50%) rotate(90deg) scale(0.5)';
+                        zhutongContainer.style.zIndex = '100';
+                        isZhutongAttached = false;
+                    }
+
+                    jiaziContainer.style.transition = 'all 0.5s ease-out';
+                    jiaziContainer.style.left = jiaziOriginalStyles.left;
+                    jiaziContainer.style.top = jiaziOriginalStyles.top;
+                    jiaziContainer.style.transform = jiaziOriginalStyles.transform;
+                    jiaziContainer.style.zIndex = jiaziOriginalStyles.zIndex;
+                }
+            }
+
+            // ==================== 第六部分：事件绑定 ====================
+            jvziHandle.addEventListener('mousedown', onJvziPointerDown);
+            document.addEventListener('mousemove', onJvziPointerMove);
+            document.addEventListener('mouseup', onJvziPointerUp);
+            jvziHandle.addEventListener('touchstart', onJvziPointerDown, { passive: false });
+            document.addEventListener('touchmove', onJvziPointerMove, { passive: false });
+            document.addEventListener('touchend', onJvziPointerUp);
+
+            jiaziHandle.addEventListener('mousedown', onJiaziPointerDown);
+            document.addEventListener('mousemove', onJiaziPointerMove);
+            document.addEventListener('mouseup', onJiaziPointerUp);
+            jiaziHandle.addEventListener('touchstart', onJiaziPointerDown, { passive: false });
+            document.addEventListener('touchmove', onJiaziPointerMove, { passive: false });
+            document.addEventListener('touchend', onJiaziPointerUp);
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文房四宝 - 制作完成</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="scene scene-complete">
+        <button class="back-btn" onclick="goBack()">← 返回</button>
+        <div class="page-number">7/8</div>
+        <div class="complete-maojian-stack" aria-hidden="true">
+            <div class="swipe-indicator"></div>
+        </div>
+        <img class="complete-mohao" src="../images/icons/mohao.png" alt="mohao">
+        <div class="mohao-interaction-indicator"></div>
+        <img class="complete-maojian complete-maojian-3" src="../images/icons/maojian3.png" alt="毛尖3">
+        <img class="complete-maojian complete-maojian-2" src="../images/icons/maojian2.png" alt="毛尖2">
+        <img class="complete-maojian complete-maojian-1" src="../images/icons/maojian1.png" alt="毛尖1">
+        <img class="complete-mohaokou" src="../images/icons/mohaokou.png" alt="mohaokou">
+        <img class="complete-mohaobi" src="../images/icons/mohaobi.png" alt="mohaobi">
+        <img class="complete-jiaoshui" src="../images/icons/jiaoshui.png" alt="胶水">
+        <button class="refresh-btn" onclick="location.reload()"></button>
+        <div class="final-next-container">
+            <span class="final-next-text" data-text="从选材到成品，匠心至此，不如挥毫一试">从选材到成品，匠心至此，不如挥毫一试</span>
+            <button class="final-next-btn" onclick="goToPage('drawing.html')">→</button>
+        </div>
+        <div class="interaction-hint">
+            <span class="hint-text"></span>
+        </div>
+    </div>
+    
+    <script src="../js/main.js"></script>
+</body>
+</html>
