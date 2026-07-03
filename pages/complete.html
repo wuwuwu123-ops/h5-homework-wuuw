@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
+    <!-- 竖屏提示层 -->
+    <div id="orientation-hint">
+        <div class="hint-icon">📱</div>
+        <div class="hint-text">请横屏观看</div>
+    </div>
+    
     <div class="scene scene-complete">
         <button class="back-btn" onclick="goBack()">← 返回</button>
         <div class="page-number">7/8</div>
@@ -32,5 +38,42 @@
     </div>
     
     <script src="../js/main.js"></script>
+    <script>
+        (function() {
+            // 屏幕方向检测
+            const orientationHint = document.getElementById('orientation-hint');
+            const scene = document.querySelector('.scene');
+            
+            function checkOrientation() {
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                
+                if (!isMobile) {
+                    // 非移动端不显示提示
+                    orientationHint.classList.remove('visible');
+                    scene.classList.remove('hidden-on-portrait');
+                    return;
+                }
+                
+                const isPortrait = window.innerHeight > window.innerWidth;
+                
+                if (isPortrait) {
+                    // 竖屏：显示提示，隐藏内容
+                    orientationHint.classList.add('visible');
+                    scene.classList.add('hidden-on-portrait');
+                } else {
+                    // 横屏：隐藏提示，显示内容
+                    orientationHint.classList.remove('visible');
+                    scene.classList.remove('hidden-on-portrait');
+                }
+            }
+            
+            // 初始检查
+            checkOrientation();
+            
+            // 监听窗口大小变化和方向变化
+            window.addEventListener('resize', checkOrientation);
+            window.addEventListener('orientationchange', checkOrientation);
+        })();
+    </script>
 </body>
 </html>

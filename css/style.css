@@ -881,3 +881,46 @@ body {
         overflow: hidden;
     }
 }
+
+/* 竖屏提示 */
+#orientation-hint {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    color: #fff;
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#orientation-hint.visible {
+    display: flex;
+}
+
+#orientation-hint .hint-text {
+    font-family: 'KaiTi', '楷体', serif;
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+#orientation-hint .hint-icon {
+    font-size: 4rem;
+    animation: rotate-hint 2s ease-in-out infinite;
+}
+
+@keyframes rotate-hint {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-90deg); }
+}
+
+/* 竖屏时隐藏场景内容 */
+.scene.hidden-on-portrait {
+    display: none !important;
+}

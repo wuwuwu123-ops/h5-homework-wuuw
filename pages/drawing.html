@@ -5,50 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文房四宝 - 书写墨宝</title>
     <link rel="stylesheet" href="../css/style.css">
-    <style>
-        /* 竖屏提示层 */
-        #orientation-hint {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            color: #fff;
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        
-        #orientation-hint.visible {
-            display: flex;
-        }
-        
-        #orientation-hint .hint-text {
-            font-family: 'KaiTi', '楷体', serif;
-            font-size: 2rem;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        #orientation-hint .hint-icon {
-            font-size: 4rem;
-            animation: rotate-hint 2s ease-in-out infinite;
-        }
-        
-        @keyframes rotate-hint {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(-90deg); }
-        }
-        
-        /* 竖屏时隐藏场景内容 */
-        .scene-drawing.hidden-on-portrait {
-            display: none !important;
-        }
-    </style>
 </head>
 <body>
     <!-- 竖屏提示层 -->
@@ -98,7 +54,7 @@
     (function() {
         // 屏幕方向检测
         const orientationHint = document.getElementById('orientation-hint');
-        const sceneDrawing = document.querySelector('.scene-drawing');
+        const scene = document.querySelector('.scene');
         
         function checkOrientation() {
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -106,7 +62,7 @@
             if (!isMobile) {
                 // 非移动端不显示提示
                 orientationHint.classList.remove('visible');
-                sceneDrawing.classList.remove('hidden-on-portrait');
+                scene.classList.remove('hidden-on-portrait');
                 return;
             }
             
@@ -115,11 +71,11 @@
             if (isPortrait) {
                 // 竖屏：显示提示，隐藏内容
                 orientationHint.classList.add('visible');
-                sceneDrawing.classList.add('hidden-on-portrait');
+                scene.classList.add('hidden-on-portrait');
             } else {
                 // 横屏：隐藏提示，显示内容
                 orientationHint.classList.remove('visible');
-                sceneDrawing.classList.remove('hidden-on-portrait');
+                scene.classList.remove('hidden-on-portrait');
             }
         }
         
