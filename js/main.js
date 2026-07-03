@@ -488,8 +488,8 @@ function initCompleteDrag() {
     const mohaokou = document.querySelector('.complete-mohaokou');
     const mohaoInteractionIndicator = document.querySelector('.mohao-interaction-indicator');
     const finalNextContainer = document.querySelector('.final-next-container');
-    const interactionHint = document.querySelector('.interaction-hint');
-    const hintText = document.querySelector('.hint-text');
+    const interactionHint = document.getElementById('complete-hint');
+    const hintText = document.getElementById('complete-hint-text');
     if (!stack || !maojian1 || !maojian2 || !maojian3) return;
 
     function showHint(text) {
